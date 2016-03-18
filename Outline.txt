@@ -1,0 +1,41 @@
+1. Introduction
+	- Motivate large scale data analytics (Prabhat, Mahoney, Alex, Aditya)
+    - Matrix Factorization
+    - Experimental and Simulation Datasets
+    - Recap Contributions
+    
+2. Methods and Implementation	(Alex, Aditya)
+	- Spark as a platform
+    - CX (Lisa, Evan)
+    	+ Algorithm
+        + Spark
+        + C and MPI
+        + Optimization (Mike, Kristi, Lisa, Evan)
+    - NMF (Alex, Aditya)
+    - PCA (Alex, ...)
+    - Related Work
+
+3. Datasets and Science Problems 
+	- DayaBay			(Lisa)
+    	+ file format
+        + dataset size
+        + variables
+    - BioImg			(Jey/Alex)
+    - Climate			(Prabhat)
+    
+4. System - Cori/XC40 	(Prabhat)
+
+5. Results				(Alex, Aditya, Kristi, Mike, Evan, Pramod, Lisa)
+	- CX
+    	+ Spark vs. C and MPI
+        + percentage of peak
+        + parallel efficiency
+        + stacked bar graph of running time
+        + science results
+    - NMF
+    - PCA
+    - Interpretation 	(Mike, Kristi, Jim H, Prabhat, Aditya)
+    	+ discuss Spark vs C and MPI gap
+        + discuss system issues
+        
+6. Discussion and Future Work	(Aditya, Alex, Prabhat)
