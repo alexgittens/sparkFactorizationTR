@@ -9,26 +9,30 @@ That is, they aim to find matrices $Y$ and $Z$ such that
 \end{equation*}
 Low-rank matrix factorization methods are important tools in linear algebra and numerical analysis, and they find use in a variety of scientific fields and scientific computing.
 
-Depending on the application, various low-rank factorization techniques are of interest. Popular choices include the singular value decomposition~\cite{GVL96}, principal component analysis~\cite{pcaBook}, rank-revealing QR factorization~\cite{GE96}, nonnegative matrix factorization (NMF) ~\cite{NMFalg}, and CUR/CX decompositions~\cite{CUR_PNAS}.
+Matrix factorizations are also widely-used in statistical data analysis~\cite{HMH00}.
+Depending on the particular application, various low-rank factorization techniques are of interest. Popular choices include the singular value decomposition~\cite{GVL96}, principal component analysis~\cite{pcaBook}, rank-revealing QR factorization~\cite{GE96}, nonnegative matrix factorization (NMF) ~\cite{NMFalg}, and CX/CUR decompositions~\cite{CUR_PNAS}.
 
-In this work, we consider the PCA decomposition due to its ubiquity and the NMF and CX decompositions due to their usefulness in scalable and interpretable data analysis. In the remainder of the section, we briefly describe these decompositions and the algorithms we used in our implementations.
+In this work, we consider the PCA decomposition, due to its ubiquity, as well as the NMF and CX/CUR decompositions, due to their usefulness in scalable and interpretable data analysis. In the remainder of the section, we briefly describe these decompositions and the algorithms we used in our implementations, and we also discuss related implementations. The body of work---theoretical and practical--- surrounding distributed low-rank matrix factorization is large and continuously growing, so for conciseness we restrict our discussion to works that implement PCA, NMF, CX/CUR or similar algorithms in Spark or the related Hadoop/MapReduce platform.
 % For an arbitrary matrix $A$, denote by $\a_i$ its $i$-th row, $\a^j$ its $j$-th column and $\a_{ij}$ its $(i,j)$-th element. 
-Throughout, we assume the data matrix $A$ has size $m \times n$ and rank $r$, with $r \ll n \ll m.$ We denote its $i$-th row and $j$-th column respectively with $a_i$ and $a^j$, and we denote its $(i,j)$-th element with $a_{ij}.$
+Throughout, we assume the data matrix $A$ has size $m \times n$ and rank $r$, with $r \ll n \ll m.$
 
 \subsubsection{PCA} 
-The singular value decomposition (SVD) is the most fundamental low-rank matrix factorization because it provides the best low-rank matrix approximation with respect to any unitarily invariant matrix norm.
+Principal component analysis (PCA) is closely related to the singular value decomposition (SVD).
+In particular, the PCA decomposition of a matrix $A$ is the SVD of the matrix formed by centering each column of $A$ (i.e., removing the mean of each column) and considering $A^TA$ (or $AA^T$).
+The SVD is the most fundamental low-rank matrix factorization because it provides the best low-rank matrix approximation with respect to any unitarily invariant matrix norm.
 In particular, for any target rank $k \leq r$, the SVD provides the minimizer of the optimization problem
 \begin{equation}
  \label{eqn:obj}
   \min_{\text{rank}(\tilde A) = k} \| A - \tilde A \|_F,
 \end{equation}
 where the Frobenius norm $\| \cdot \|_F$ is defined as $\|X\|_F^2 =
-\sum_{i=1}^m \sum_{j=1}^n X_{ij}^2 $. Specifically, the solution
+\sum_{i=1}^m \sum_{j=1}^n X_{ij}^2 $.
+The solution
 to~\eqref{eqn:obj} is given by the truncated SVD, i.e., $A_k = U_k \Sigma_k
 V_k^T$, where the columns of $U_k$ and $V_k$ are the top $k$ {\it left and right singular vectors}, respectively, and $\Sigma_k$ is a 
 diagonal matrix containing the corresponding top $k$ {\it singular values}.
 
-Principal component analysis (PCA) and SVD are closely related: the PCA decomposition of $A$ is defined as the SVD of the matrix formed by centering each column of $A$ (i.e., removing the mean of each column).
+
 %PCA aims to convert the original features into a set of linearly uncorrelated variables called {\it principal components}.
 %The first principal component is defined to be the direction along which the highest variance possible among the data points is attained, and each succeeding principal component in turn has the largest variance possible subject to the constraint that it is orthogonal to the preceding principal components.
 %When low-rank methods are appropriate, the number of principal components needed to preserve most of the information in $A$ is far less than the number of original features. 
@@ -59,9 +63,12 @@ Direct algorithms for computing the PCA decomposition scale as $\mathcal{O}(mn^2
       \EndFor
     \end{algorithmic}
 \end{algorithm}
+
+\textsc{ML-Lib}, Spark's machine learning library, provides implementations of the SVD and PCA, as well as an alternating least squares algorithm for low-rank factorization~\cite{meng2015mllib} (the PCA algorithm used in ML-Lib is very similar to Algorithm~\ref{alg:pca}, but explicitly computes $A^TA$). Similarly, the Apache Mahout project provides Hadoop and Spark implementations of the PCA, \textsc{RandomizedSVD}, and ALS algorithms. However, to our knowledge, there are no published investigations into the impact Spark or MapReduce's infrastructure has on the performance of these algorithms.
   
 \subsubsection{NMF}
-Although the PCA provides a mathematically optimal low-rank decomposition in the sense of~\eqref{eqn:obj}, in some scientific applications retaining sparseness and interpretability is as important as explaining variability. The nonnegative matrix factorization (NMF) provides an interpretable low-rank matrix decomposition when the columns of $A$ are nonnegative and can be viewed as additive superpositions of a small number of positive factors~\cite{gillis2014and}. NMF has found applications, among other places, in medical imaging~\cite{lee2001nmf}, facial recognition~\cite{guillamet2002non}, chemometrics~\cite{Paatero199723}, hyperspectral imaging~\cite{gillis2015hierarchical}, and astronomy~\cite{pauca2006nonnegative}.
+Although the PCA provides a mathematically optimal low-rank decomposition in the sense of~\eqref{eqn:obj}, in some scientific applications retaining sparseness and interpretability is as important as explaining variability. 
+Various nonnegative matrix factorizations (NMFs) provide interpretable low-rank matrix decompositions when the columns of $A$ are nonnegative and can be viewed as additive superpositions of a small number of positive factors~\cite{gillis2014and}. NMF has found applications, among other places, in medical imaging~\cite{lee2001nmf}, facial recognition~\cite{guillamet2002non}, chemometrics~\cite{Paatero199723}, hyperspectral imaging~\cite{gillis2015hierarchical}, and astronomy~\cite{pauca2006nonnegative}.
 
 \begin{algorithm}[tb]
     \caption{\textsc{NMF} Algorithm}
@@ -75,15 +82,18 @@ Although the PCA provides a mathematically optimal low-rank decomposition in the
     \end{algorithmic}
   \end{algorithm}
   
-The optimization problem solved by NMF is
+The basic optimization problem solved by NMF is
 \begin{equation}
 \min_{W,H \geq 0} \|A - WH\|_F,
 \end{equation}
 where $W \in \mathbb{R}^{m \times k}$ and $H \in \mathbb{R}^{k \times n}$ are entry-wise nonnegative matrices. Typical approaches attempt to solve this non-convex problem by using block coordinate optimizations that require multiple passes over $A$~\cite{kim2014algorithms}. We adopt the one-pass algorithm of~\cite{benson2014scalable}. This approach makes the assumption that $W$ can be formed by {\it selecting} columns from $A$. In this setting, the columns of $A$ constituting $W$ as well as the corresponding $H$ can be computed directly from the (much smaller) $R$ factor in a thin QR factorization of $A$. More details are given in Algorithm~\ref{alg:nmf}: in step 1, a one pass distributed tall-skinny QR (\textsc{TSQR}) factorization~\cite{demmel2012communication} is used to compute the $R$ factor of $A$; in step 2, which occurs on the driver, the \textsc{Xray} algorithm of~\cite{kumar2013fast} is applied to $R$ to simultaneously compute $H$ and the column indices $\mathcal{K}$ of $W$ in $A$. Finally, $W$ can be explicitly computed once $\mathcal{K}$ is known.
 
-\subsubsection{CX}
-CX decompositions are
-low-rank matrix decompositions that are expressed in terms of a small number of columns/rows, i.e, actual data elements.  As such, they have been used in scientific applications where coupling analytical techniques with domain knowledge is at a premium, including
+The \textsc{ML-Lib} and Mahout libraries provide alternating least squares-based NMF implementations in Spark and MapReduce, respectively, and several other NMF implementations are available for the MapReduce framework~\cite{liu2010distributed,Liao201448,benson2014scalable}. We note that~\cite{benson2014scalable} introduced Algorithm~\ref{alg:nmf}. None of these works quantified the performance costs of implementing these algorithms in the Spark or MapReduce frameworks.
+
+\subsubsection{CX/CUR}
+CX (and related CUR) decompositions are
+low-rank matrix decompositions that are expressed in terms of a small number of actual columns/rows, i.e, actual data elements, as opposed to eigencolumns/eigenrows.  
+As such, they have been used in scientific applications where coupling analytical techniques with domain knowledge is at a premium, including
 genetics~\cite{Paschou07b}, astronomy~\cite{Yip14-AJ}, and mass spectrometry imaging~\cite{YRPMB15}. To find a CX decomposition, we seek matrices $C$ and $X$ such that the approximation error $\|A-CX\|_F$ is small and $C$ is an $m\times k$ matrix comprising of $k$
 actual columns of $A$ and $X$ is a $k \times n$ matrix.
 
@@ -158,3 +168,4 @@ The computational cost of the CX decomposition is determined by the cost of comp
       \end{algorithmic}
   \end{algorithm}
 
+To the best of our knowledge, this is the first published work to investigate the performance of the CX algorithm on any large-scale distributed/parallel platform.

@@ -1,10 +1,7 @@
-\textcolor{red}{Aditya, Mike, Kristi: I need your input here.}
-Major conclusions:
+The extensive studies conducted in this paper lead us to the following conclusion: 
 \begin{itemize}
-\item{Spark is 2-10x slower for a range of matrix factorization workloads compared to C+MPI implementations. If we remove I/O times from the consideration to purely focus on algorithmic execution, the performance gap widens to 7-25x.}
-\item{Spark can be scaled to 1600 nodes on a Cray XC40 system. However, at that scale the overheads associated with scheduling and ??? completely dominate the runtime.}
-\item{Given the large performance gap between Spark and C+MPI, it might be wortwhile to investigate integration/interfacing of linear algebra libraries with the Spark runtime. The cost of copying data between runtimes might be worth the performance penalty.}
-\item{Efficient I/O is critical for Data Analytics at scale. System architectures in the future will need to be balanced to support data (and hence I/O intensive) workloads.}
-\item{}
-\item{}
+\item{We have succeeded in implementing a range of important matrix factorization algorithms in Spark: we have applied NMF, PCA and CX to 1.6, 2.2, and 16-TB sized datasets. We have scaled the codes on 50, 100, 300, 500, and 1600 XC40 nodes. To the best of our knowledge, these are some of the largest scale \emph{scientific data analytics} workloads attempted with Spark on HPC systems.}
+\item{Head-to-head comparisons of these methods with C+MPI variants have revealed a number of opportunities for improving Spark performance. The current end-to-end performance gap for our workloads is $2.3\times - 26\times$; if we remove I/O times the gap widens to $14.9\times - 43.8\times$. At scale, Spark performance overheads associated with scheduling, stragglers, result serialization and task deserialization completely dominate the runtime by an order of magnitude.}
+\item{In order for Spark to leverage existing, high-performance linear algebra libraries, it may be worthwhile to investigate better mechanisms for integrating and interfacing MPI-based runtimes with Spark. The cost associated with copying data between the runtimes may not be prohibitive.}
+\item{Finally, efficient, parallel I/O is critical for Data Analytics at scale. System architectures in the future will need to be balanced to support data-, and hence I/O-intensive, workloads.}
 \end{itemize}
