@@ -1,0 +1,160 @@
+
+\subsection{Matrix Factorizations}
+
+Given an $m \times n$ data matrix $A$, low-rank matrix factorization methods aim to find two or more smaller matrices such that their product is a good approximation to $A$.
+That is, they aim to find matrices $Y$ and $Z$ such that
+\begin{equation*}
+ \label{eqn:apprx}
+    \underset{m\times n}{A} \approx \underset{m\times k}{Y} \times \underset{k\times n}{Z}. 
+\end{equation*}
+Low-rank matrix factorization methods are important tools in linear algebra and numerical analysis, and they find use in a variety of scientific fields and scientific computing.
+
+Depending on the application, various low-rank factorization techniques are of interest. Popular choices include the singular value decomposition~\cite{GVL96}, principal component analysis~\cite{pcaBook}, rank-revealing QR factorization~\cite{GE96}, nonnegative matrix factorization (NMF) ~\cite{NMFalg}, and CUR/CX decompositions~\cite{CUR_PNAS}.
+
+In this work, we consider the PCA decomposition due to its ubiquity and the NMF and CX decompositions due to their usefulness in scalable and interpretable data analysis. In the remainder of the section, we briefly describe these decompositions and the algorithms we used in our implementations.
+% For an arbitrary matrix $A$, denote by $\a_i$ its $i$-th row, $\a^j$ its $j$-th column and $\a_{ij}$ its $(i,j)$-th element. 
+Throughout, we assume the data matrix $A$ has size $m \times n$ and rank $r$, with $r \ll n \ll m.$ We denote its $i$-th row and $j$-th column respectively with $a_i$ and $a^j$, and we denote its $(i,j)$-th element with $a_{ij}.$
+
+\subsubsection{PCA} 
+The singular value decomposition (SVD) is the most fundamental low-rank matrix factorization because it provides the best low-rank matrix approximation with respect to any unitarily invariant matrix norm.
+In particular, for any target rank $k \leq r$, the SVD provides the minimizer of the optimization problem
+\begin{equation}
+ \label{eqn:obj}
+  \min_{\text{rank}(\tilde A) = k} \| A - \tilde A \|_F,
+\end{equation}
+where the Frobenius norm $\| \cdot \|_F$ is defined as $\|X\|_F^2 =
+\sum_{i=1}^m \sum_{j=1}^n X_{ij}^2 $. Specifically, the solution
+to~\eqref{eqn:obj} is given by the truncated SVD, i.e., $A_k = U_k \Sigma_k
+V_k^T$, where the columns of $U_k$ and $V_k$ are the top $k$ {\it left and right singular vectors}, respectively, and $\Sigma_k$ is a 
+diagonal matrix containing the corresponding top $k$ {\it singular values}.
+
+Principal component analysis (PCA) and SVD are closely related: the PCA decomposition of $A$ is defined as the SVD of the matrix formed by centering each column of $A$ (i.e., removing the mean of each column).
+%PCA aims to convert the original features into a set of linearly uncorrelated variables called {\it principal components}.
+%The first principal component is defined to be the direction along which the highest variance possible among the data points is attained, and each succeeding principal component in turn has the largest variance possible subject to the constraint that it is orthogonal to the preceding principal components.
+%When low-rank methods are appropriate, the number of principal components needed to preserve most of the information in $A$ is far less than the number of original features. 
+
+\begin{algorithm}[tb]
+    \caption{\textsc{PCA} Algorithm}
+    \label{alg:pca}
+    \begin{algorithmic}[1]
+      \Require $A \in \mathbb{R}^{m\times n}$, rank parameter $k \leq \textrm{rank}(A).$
+      \Ensure $U_k \Sigma_k V_k^T = \textsc{PCA}(A, k).$
+      \State Let $(V_k, \_) = \textsc{IRAM}(\textsc{MultiplyGramian}(A, \cdot), k).$
+      \State Let $Y = \textsc{Multiply}(A, V_k).$
+      \State Compute $(U_k, \Sigma_k, \_) = \textsc{SVD}(Y).$
+    \end{algorithmic}
+  \end{algorithm}
+  
+Direct algorithms for computing the PCA decomposition scale as $\mathcal{O}(mn^2)$, so are not feasible for the scale of the problems we consider. Instead, we use the iterative algorithm presented in Algorithm~\ref{alg:pca}: in step 1, a series of distributed matrix-vector products against $A^T A$  (\textsc{MultiplyGramian}) are used to extract $V_k$ by applying the implicitly restarted Arnoldi method (\textsc{IRAM})~\cite{lehoucq1996deflation}, then in step 2 a distributed matrix-matrix product followed by a collect is used to bring $AV_k$ to the driver. Step 3 occurs on the driver, and computes a final SVD on $AV_k$ to extract the top left singular vectors $U_k$ and the corresponding eigenvalues $\Sigma_k.$ Here QR and SVD compute the ``thin'' versions of the QR and SVD decompositions~\cite{GVL96}. (Algorithm~\ref{alg:pca} calls \textsc{MultiplyGramian}, which is summarized in Algorithm~\ref{alg:gram}).
+
+  \begin{algorithm}[tb]
+    \caption{{\sc MultiplyGramian} Algorithm}
+    \label{alg:gram}
+    \begin{algorithmic}[1]
+      \Require $A \in \mathbb{R}^{m\times n}$, $B \in \mathbb{R}^{n\times k}$.
+      \Ensure $X = A^T A B$.
+      \State Initialize $X = 0$.
+      \For{each row $a$ in $A$}
+          \State $X \gets X + a a^T B$.
+      \EndFor
+    \end{algorithmic}
+\end{algorithm}
+  
+\subsubsection{NMF}
+Although the PCA provides a mathematically optimal low-rank decomposition in the sense of~\eqref{eqn:obj}, in some scientific applications retaining sparseness and interpretability is as important as explaining variability. The nonnegative matrix factorization (NMF) provides an interpretable low-rank matrix decomposition when the columns of $A$ are nonnegative and can be viewed as additive superpositions of a small number of positive factors~\cite{gillis2014and}. NMF has found applications, among other places, in medical imaging~\cite{lee2001nmf}, facial recognition~\cite{guillamet2002non}, chemometrics~\cite{Paatero199723}, hyperspectral imaging~\cite{gillis2015hierarchical}, and astronomy~\cite{pauca2006nonnegative}.
+
+\begin{algorithm}[tb]
+    \caption{\textsc{NMF} Algorithm}
+    \label{alg:nmf}
+    \begin{algorithmic}[1]
+      \Require $A \in \mathbb{R}^{m\times n}$ with $A \geq 0$, rank parameter $k \leq \textrm{rank}(A).$
+      \Ensure $W H \approx A$ with $W,H \geq 0$
+      \State Let $(\_, R) = \textsc{TSQR}(A).$
+      \State Let $(\mathcal{K}, H) = \textsc{Xray}(R, k).$
+      \State Let $W = A(:, \mathcal{K}).$
+    \end{algorithmic}
+  \end{algorithm}
+  
+The optimization problem solved by NMF is
+\begin{equation}
+\min_{W,H \geq 0} \|A - WH\|_F,
+\end{equation}
+where $W \in \mathbb{R}^{m \times k}$ and $H \in \mathbb{R}^{k \times n}$ are entry-wise nonnegative matrices. Typical approaches attempt to solve this non-convex problem by using block coordinate optimizations that require multiple passes over $A$~\cite{kim2014algorithms}. We adopt the one-pass algorithm of~\cite{benson2014scalable}. This approach makes the assumption that $W$ can be formed by {\it selecting} columns from $A$. In this setting, the columns of $A$ constituting $W$ as well as the corresponding $H$ can be computed directly from the (much smaller) $R$ factor in a thin QR factorization of $A$. More details are given in Algorithm~\ref{alg:nmf}: in step 1, a one pass distributed tall-skinny QR (\textsc{TSQR}) factorization~\cite{demmel2012communication} is used to compute the $R$ factor of $A$; in step 2, which occurs on the driver, the \textsc{Xray} algorithm of~\cite{kumar2013fast} is applied to $R$ to simultaneously compute $H$ and the column indices $\mathcal{K}$ of $W$ in $A$. Finally, $W$ can be explicitly computed once $\mathcal{K}$ is known.
+
+\subsubsection{CX}
+CX decompositions are
+low-rank matrix decompositions that are expressed in terms of a small number of columns/rows, i.e, actual data elements.  As such, they have been used in scientific applications where coupling analytical techniques with domain knowledge is at a premium, including
+genetics~\cite{Paschou07b}, astronomy~\cite{Yip14-AJ}, and mass spectrometry imaging~\cite{YRPMB15}. To find a CX decomposition, we seek matrices $C$ and $X$ such that the approximation error $\|A-CX\|_F$ is small and $C$ is an $m\times k$ matrix comprising of $k$
+actual columns of $A$ and $X$ is a $k \times n$ matrix.
+
+% Let $V_k$ contain the top $k$ right singular vectors of $A$. Given a target rank parameter $k$, for $i=1,\ldots,n$, the $i$-th leverage score is defined as
+%   \begin{equation}
+%    \label{eqn:lev}
+%     \ell_i = \sum_{j=1}^k v_{ij}^2.
+%   \end{equation}
+% These scores quantify the amount of ``leverage'' each column of $A$ exerts on the best rank-$k$ approximation to $A$. If, for $i=1,\ldots,n$, we define the {\it normalized leverage scores} as
+%   \begin{equation}
+%   \label{eqn:nlev}
+%     p_i = \frac{\ell_i}{\sum_{j=1}^n \ell_j},
+%   \end{equation}
+% where $\ell_i$ is defined in~\eqref{eqn:lev}, and choose columns from $A$ according to those normalized leverage scores, then (by~\cite{DMM08,CUR_PNAS}) the selected columns are able to reconstruct the matrix $A$ nearly as well as $A_k$ does.
+
+The randomized algorithm of~\cite{DMM08} generates a $C$ whose approximation error is, with high probability, within a multiplicative factor of $(1+\varepsilon)$ of the optimal error obtainable with a low-rank decomposition:
+\[
+\|A - CX\|_F \leq (1+ \varepsilon) \|A - A_k\|_F.
+\]
+This algorithm takes as input the (approximate or exact) \emph{leverage scores} of the columns of $A.$ The leverage score of the $j$-th column of $A$ is defined in terms of $V_k$, the matrix of top k right singular vectors:
+  \begin{equation}
+    \label{eqn:lev}
+     \ell_i = \sum_{j=1}^k (V_k) _{ij}^2;
+   \end{equation}
+the leverage scores can be approximated using an approximation to $V_k.$ The CX algorithm uses those scores as a sampling distribution to select $k$ columns from $A$ to form $C$; once the matrix $C$ is determined, the optimal matrix $X$ that minimizes $\|A-CX\|_F$ can be computed accordingly; see~\cite{DMM08} for the details of this construction.
+
+%  \begin{algorithm}[tb]
+%    \caption{\textsc{CX} Decomposition}
+%     \label{alg:cx}
+%     \begin{algorithmic}[1]
+%       \Require $A \in \mathbb{R}^{m\times n}$, rank parameter $k \leq \textrm{rank}(A)$, number of power iterations $q$.
+%       \Ensure $C$.
+%       \State Compute an approximation of the top-$k$ right singular vectors of $A$ denoted by $\tilde V_k$, using \textsc{RandomizedSVD} with $q$ power iterations.
+%       \State Let $\ell_i = \sum_{j=1}^k \tilde v_{ij}^2$, where $\tilde v_{ij}^2$ is the $(i,j)$-th element of $\tilde V_k$, for $i = 1, \ldots, n$.·
+%       \State Define $p_i = \ell_i / \sum_{j=1}^d \ell_j$ for $i=1,\ldots,n$.
+%       \State Randomly sample $k$ columns from $A$ in i.i.d. trials, using the importance sampling distribution $\{p_i\}_{i=1}^n$ .
+%       \end{algorithmic}
+% \end{algorithm}
+
+The computational cost of the CX decomposition is determined by the cost of computing $V_k$ exactly or approximately. To approximate $V_k$, we use the \textsc{RandomizedSVD} algorithm introduced in \cite{MRT06,MRT11}. We refer the readers to \cite{HMT09_SIREV,Mah-mat-rev_BOOK} for more details. Importantly, the algorithm runs in $\mathcal{O}(mn \log k)$ time and needs only a constant number of passes over the data matrix ($q$+1), where $q$ is an input in Algorithm~\ref{alg:cx}).  The \textsc{RandomizedSVD} algorithm comprises the first nine steps of Algorithm~\ref{alg:cx}. The running time cost for \textsc{RandomizedSVD} is dominated by a distributed matrix-matrix multiplication appearing in Steps 3 and 7 of Algorithm~\ref{alg:cx}. After Step 7, $Y$ is collected the remaining computations are carried out on the driver.
+
+\begin{algorithm}[tb]
+   \caption{{\sc CX} Algorithm}
+    \label{alg:cx}
+    \begin{algorithmic}[1]
+      \Require $A \in \mathbb{R}^{m\times n}$, \
+        number of power iterations $q \ge 1$, \
+        target rank $k > 0$, slack $p \ge 0$, and let $\ell=k+p$.
+
+      \Ensure $C$.
+
+      \State Initialize $B \in \mathbb{R}^{n\times \ell}$ by sampling $B_{ij} \sim \mathcal{N}(0, 1)$.
+
+      \For{$q$ times}
+          \State $B \gets \Call{MultiplyGramian}{A, B}$
+          \State $(B, \_) \gets \Call{QR}{B}$
+      \EndFor
+
+      \State Let $Q$ be the first $k$ columns of $B$.
+
+      \State Let $Y = \Call{Multiply}{A, Q}$.
+
+      \State Compute $(U, \Sigma, \tilde V^T) = \Call{SVD}{Y}$.
+
+      \State Let $V = Q \tilde V$.
+
+	  \State Let $\ell_i = \sum_{j=1}^k v_{ij}^2$ for $i = 1, \ldots, n$.
+      
+      \State Define $p_i = \ell_i / \sum_{j=1}^d \ell_j$ for $i=1,\ldots,n$.
+      
+      \State Randomly sample $k$ columns from $A$ in i.i.d. trials, using the importance sampling distribution $\{p_i\}_{i=1}^n$ .
+      \end{algorithmic}
+  \end{algorithm}
+

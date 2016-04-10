@@ -3,7 +3,18 @@
 %        1         2         3         4         5         6         7         8
 
 \documentclass[letterpaper, 10 pt, conference]{ieeeconf}  % Comment this line out
-                                                          % if you need a4paper
+\usepackage{color}
+\usepackage{multirow}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{algpseudocode}
+\usepackage{algorithm, algorithmicx}
+% if you need a4paper
 %\documentclass[a4paper, 10pt, conference]{ieeeconf}      % Use this line for a4
                                                           % paper
 
@@ -17,7 +28,8 @@
 
 
 % The following packages can be found on http:\\www.ctan.org
-%\usepackage{graphics} % for pdf, bitmapped graphics files
+\usepackage{graphics} % for pdf, bitmapped graphics files
+\usepackage{graphicx}
 %\usepackage{epsfig} % for postscript graphics files
 %\usepackage{mathptmx} % assumes new font selection scheme installed
 %\usepackage{times} % assumes new font selection scheme installed
@@ -25,78 +37,62 @@
 %\usepackage{amssymb}  % assumes amsmath package installed
 
 \title{\LARGE \bf
-Spark at Scale: A Comparison of Data Analytics on MPI and Spark
+Matrix factorizations at scale: a comparison of scientific data analytics on Spark and MPI using three case studies 
 }
 
-%\author{ \parbox{3 in}{\centering Huibert Kwakernaak*
-%         \thanks{*Use the $\backslash$thanks command to put information here}\\
-%         Faculty of Electrical Engineering, Mathematics and Computer Science\\
-%         University of Twente\\
-%         7500 AE Enschede, The Netherlands\\
-%         {\tt\small h.kwakernaak@autsubmit.com}}
-%         \hspace*{ 0.5 in}
-%         \parbox{3 in}{ \centering Pradeep Misra**
-%         \thanks{**The footnote marks may be inserted manually}\\
-%        Department of Electrical Engineering \\
-%         Wright State University\\
-%         Dayton, OH 45435, USA\\
-%         {\tt\small pmisra@cs.wright.edu}}
+%\author{Alex Gittens$^{1}$ \and Aditya Devarakonda$^{2}$ \and Evan Racah$^{3}$ \and Michael Ringenburg$^{4}$ \and  Lisa Gerhardt$^{3}$ \and Jey Kottaalam$^{5}$ \and Jialin Liu$^{3}$ \and Kristyn Maschhoff$^{4}$ \and Shane Canon$^{3}$ \and Jatin Chhugani$^{6}$ \and Pramod Sharma$^{4}$ \and Jiyan Yang$^{7}$ \and James Demmel$^{8}$ \and Jim Harrell$^{4}$ \and Venkat Krishnamurthy$^{4}$ \and Michael W. Mahoney$^{1}$ \and Prabhat$^{3}$% <-this % stops a space
+%\thanks{$^{1}$ICSI and Department of Statistics, UC Berkeley}
+%\thanks{$^{2}$EECS, UC Berkeley}
+%\thanks{$^{3}$NERSC, Lawrence Berkeley National Laboratory}
+%\thanks{$^{4}$Cray, Inc.}
 %}
-
-\author{Authors List$^{1}$% <-this % stops a space
-\thanks{*This work was not supported by any organization}% <-this % stops a space
-\thanks{$^{1}$H. Kwakernaak is with Faculty of Electrical Engineering, Mathematics and Computer Science,
-        University of Twente, 7500 AE Enschede, The Netherlands
-        {\tt\small h.kwakernaak at papercept.net}}%
-\thanks{$^{2}$P. Misra is with the Department of Electrical Engineering, Wright State University,
-        Dayton, OH 45435, USA
-        {\tt\small p.misra at ieee.org}}%
-}
-
 
 \begin{document}
 \maketitle
 \thispagestyle{empty}
 \pagestyle{empty}
 
+\input{text/abstract}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\begin{abstract}
-\end{abstract}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{INTRODUCTION}
-\section{METHODS AND IMPLEMENTATION}
-\section{DATASETS AND SCIENCE PROBLEMS}
-\section{SYSTEM - NERSC CORI AND CRAY XC40}
+\label{sec:introduction}
+\input{text/intro}
+
+\section{SCIENCE DRIVERS AND DATASETS}
+\label{sec:science}
+\input{text/datasets}
+
+\section{METHODS}
+\label{sec:methods}
+\input{text/methods}
+
+\section{IMPLEMENTATION}
+\label{sec:implementation}
+\input{text/implementation}
+
+\section{EXPERIMENTAL SETUP}
+\label{sec:setup}
+\input{text/expsetup}
+
 \section{RESULTS}
-\addtolength{\textheight}{-12cm}   % This command serves to balance the column lengths
-                                  % on the last page of the document manually. It shortens
-                                  % the textheight of the last page by a suitable amount.
-                                  % This command does not take effect until the next page
-                                  % so it should come on the page before the last. Make
-                                  % sure that you do not shorten the textheight too much.
+\label{sec:results}
+\input{text/results}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{SPARK: LESSONS LEARNED}
+\label{sec:lessons}
+\input{text/sparklessons}
 
+\section{CONCLUSION}
+\label{sec:conclusions}
+\input{text/conclusion}
 
+\addtolength{\textheight}{-12cm}   
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{CONCLUSION AND FUTURE WORK}
 \section*{ACKNOWLEDGMENT}
-We thank Edgar Solomonik for helpful comments and suggestions on tuning TSQR. AD is supported by the National Science Foundation Graduate Research Fellowship under Grant No. DGE 1106400. Any opinion, findings, and conclusions or recommendations expressed in this material are those of the authors(s) and do not necessarily reflect the views of the National Science Foundation.This research used resources of the National Energy Research Scientific Computing Center, a DOE Office of Science User Facility supported by the Office of Science of the U.S. Department of Energy under Contract No. DE-AC02-05CH11231.
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{text/ack}
 
 \nocite{*}
 \bibliographystyle{plain}
 \bibliography{refs}
-
-
 
 \end{document}

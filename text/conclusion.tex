@@ -1,0 +1,10 @@
+\textcolor{red}{Aditya, Mike, Kristi: I need your input here.}
+Major conclusions:
+\begin{itemize}
+\item{Spark is 2-10x slower for a range of matrix factorization workloads compared to C+MPI implementations. If we remove I/O times from the consideration to purely focus on algorithmic execution, the performance gap widens to 7-25x.}
+\item{Spark can be scaled to 1600 nodes on a Cray XC40 system. However, at that scale the overheads associated with scheduling and ??? completely dominate the runtime.}
+\item{Given the large performance gap between Spark and C+MPI, it might be wortwhile to investigate integration/interfacing of linear algebra libraries with the Spark runtime. The cost of copying data between runtimes might be worth the performance penalty.}
+\item{Efficient I/O is critical for Data Analytics at scale. System architectures in the future will need to be balanced to support data (and hence I/O intensive) workloads.}
+\item{}
+\item{}
+\end{itemize}

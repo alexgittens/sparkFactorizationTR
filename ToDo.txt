@@ -1,0 +1,16 @@
+
+Paper ToDo
+
+Intro of Spark — Alex will consult with Jey/Lisa
+
+CX we’ll include Spark scaling data at most, running time breakdown at 30 (or 60), 100 and 300 — Evan/Lisa
+
+Add figure labels and captions for Spark plots, make sure plot colors are consistent— Evan
+
+Make sure plots are close to/before text in which they are referenced— Aditya
+
+Science interpretation — Prabhat will take a look
+
+“Triangle plots” which show scheduler delay — Evan will iterate
+
+Conclusion, Cite KIRA SE paper and say two sentences — Aditya, Alex, Prabhat

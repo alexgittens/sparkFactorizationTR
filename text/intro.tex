@@ -1,0 +1,25 @@
+Modern scientific progress relies upon experimental devices, observational instruments, and scientific simulations. These important modalities produce massive amounts of complex data: in High Energy Physics, the LHC project produces PBs of data every month; smaller-scale projects such as Daya Bay produce 100s of TBs over their lifetime. In Climate science, the worldwide community relies upon distributed access to the CMIP-5 archive, which is several PBs in size. In  Biosciences, each experiment can acquire 100GBs-TBs of data. In all cases, a considerable amount of effort is spend in data movement and data management issues, but the key step in gaining scientific insights is \emph{data analytics}. Several scientific domains are currently rate-limited by access to advanced parallel and scalable data analytics methods. 
+
+Some of the most important classes of scientific data analytics methods rely on matrix algorithms. 
+Matrices provide a convenient mathematical structure with which to model data arising in a broad range of applications: an $m \times n$ real-valued matrix $A$ provides a natural structure for encoding information about $m$ objects, each of which is described by $n$ features; alternatively, an $n \times n$ real-values matrix $A$ can be used to describe the correlations between all pairs of $n$ data points. 
+Matrix factorizations are common in numerical analysis and scientific computing, where the emphasis is on running time, largely since they are used simply to enable the rapid solution of linear systems and related problems.
+In statistical data analysis, however, matrix factorizations are typically used to obtain some form of lower-rank (and therefore simplified) approximation to the data matrix $A$ to enable better understanding the structure of the data~\cite{HMH00}.
+In particular, rather than simply providing a mechanism for solving another problem quickly, the actual components making up a factorization are of prime concern.
+Thus, it is of interest to understand how popular factorizations interact with other aspects of the data analysis pipeline.
+%\textcolor{red}{Michael: I need 4-6 lines on matrix factorizations and why they are important}.
+
+Recent years have seen a tremendous amount of momentum behind Big Data software frameworks such as Hadoop and Spark~\cite{SPARK_HOTC_10}. 
+These frameworks have been developed for industrial applications and commodity datacenter hardware; and they provide high productivity computing interfaces for the broader data science community.  
+Ideally, the scientific data analysis and high performance computing (HPC) communities would leverage the momentum behind Hadoop and Spark.
+Unfortunately, the performance of such frameworks at scale on conventional HPC hardware has not been investigated extensively. 
+For matrix factorizations in particular, and largely motivated by scientific computing, the research community has a distinguished track record in developing linear algebra libraries (ScaLAPACK, LAPACK, BLAS, PLASMA, MAGMA, etc). 
+Our work takes on the important task of testing nontrivial linear algebra and matrix factorization computations in Spark for real-world, large-scale scientific data analysis applications, carefully comparing and contrasting its performance with C+MPI implementations on HPC hardware. 
+
+The main contributions of this paper are as follows:
+\begin{itemize}
+\item{We develop parallel versions of three leading matrix factorization methods (PCA, NMF, CX) in Spark and C+MPI; and apply them to TB-sized scientific datasets}
+\item{We conduct strong scaling tests on a XC40 system, and test the scaling of Spark on up to 1600 nodes.}
+\item{We characterize the performance gap between Spark and C+MPI for matrix factorizations, and comment on current limitations in Spark for large scale data analytics.}
+\end{itemize}
+
+The paper is structured as follows: Section \ref{sec:science} presents three science drivers from Particle Physics, Climate Science and BioImaging, and motivates data analytics challenges at scale. Section \ref{sec:methods} presents the algorithms and implementation details of three matrix factorization methods. Section \ref{sec:setup} presents details of our HPC platform and Spark/C+MPI code configuration; we present results of our investigation in Section \ref{sec:results}. We conclude with observations on current Spark limitations in \ref{sec:lessons} and broader implications for linear algebra computations in Section \ref{sec:conclusions}. 
