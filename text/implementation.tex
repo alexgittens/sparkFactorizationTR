@@ -6,8 +6,7 @@ Spark is a parallel computing framework, built on the JVM, that adheres to the d
 
 \subsection{Implementing Matrix Factorizations in Spark}
 
-To match the data parallelism model of Spark, for all three algorithms the matrices are stored in a row-partitioned format.
-Our algorithms were carefully chosen to take advantage of this format.  
+All three matrix factorizations store the matrices in a row-partitioned format. This enables us to use data parallel algorithms and match Spark's data parallel model.
 
 The \textsc{MultiplyGramian} algorithm is the computational core of the PCA and CX algorithms.
 This algorithm is applied efficiently in a distributed fashion by observing that if the $i$-th executor of $\ell$ stores the block of the rows of $A$ denoted by $A_{(i)},$ then $A^TA B = \sum_{i=1}^\ell A_{(i)}^T A_{(i)} B.$ Thus \textsc{MultiplyGramian} requires only one round of communication.  The local linear algebra primitives \textsc{QR} and \textsc{SVD} needed for PCA and CX are computed using the \textsc{LAPACK} bindings of the Breeze numerical linear algebra library.  The \textsc{Netlib-Java} binding of the \text{ARPACK} library supplies the \textsc{IRAM} primitive required by the PCA algorithm. 
@@ -17,4 +16,5 @@ We used the \textsc{TSQR} implementation available in the \textsc{Ml-Matrix} pac
 
 
 \subsection{Implementing Matrix Factorizations in C+MPI}
-NMF, PCA and CX require linear algebra kernels that are widely available in libraries such as Intel MKL, Cray LibSci and arpack-ng. We make use of these libraries to perform linear algebra computations required for each matrix factorization. The data matrices are represented as 1D arrays of double-precision floating point numbers and are partitioned across multiple nodes. The matrix factorizations implemented and matrix shapes used require 1D-block partitioned layouts which enable us to use data parallel kernels such as matrix-vector products and TSQR. We predominately use MPI collectives for inter-processor communication and perform independent I/O using the Cray HDF5 parallel I/O~library.  
+%\textcolor{red}{Is this subsection necessary? All I'm saying is use available optimized BLAS, MPI and Cray Parallel HDF5 libraries. This overlaps with tuning parameters section and is likely not necessary for this community -- AD}
+NMF, PCA and CX require linear algebra kernels that are widely available in libraries such as Intel MKL, Cray LibSci and arpack-ng and we make use of these for each matrix factorization. The data matrices are represented as 1D arrays of double-precision floating point numbers and are partitioned across multiple nodes using a block row partitioned layout. The 1D layout enabled us to use matrix-vector products and TSQR as the main computational kernels. We predominately use MPI collectives for inter-processor communication and perform independent I/O using the Cray HDF5 parallel I/O~library.  

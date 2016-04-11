@@ -17,19 +17,13 @@ Alex:
 - add refs to C+MPI implementations in methods section
 - add paragraph for 2.2TB discussion
 - add paragraph for CX science (3-4 lines)
-- figure out what is going on with reference
+- figure out what is going on with reference (this is an IEEE class issue, it looks like)
 
 Jey:
 - check Section IV-A
 
 Aditya:
 - insert sentence in conclusion relating to limitations of Spark JVM, etc, so link to optimized libraries for on node computations and  future work, I believe, to interface Spark w/ MPI codes 
-
-- consistency with Alex's use of font/typeface 
-- shorten the C vs Spark discussion in VI-A-1
-- move pca plots to idk (somewhere closer to your discussion)
-- Node bucket rather than node count
-- not sure what, but something about CX
 
 Evan:
 - check we're not over counting IO on the 100 node NMF Spark run
@@ -38,9 +32,6 @@ Evan:
 - change/remove the titles for Figure 6 and 7 (e.g. don't need to know stage and executor numbers)
 - Fix VII-B
 - Fix "" to `` '' when quoting
-
-Alex, Adi, Evan:
-- check for the disparity b/w the SVD times for MPI and QR times for Spark and A*V
 
 Adi, Evan:
 - compress VII
