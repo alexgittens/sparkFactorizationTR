@@ -1,4 +1,27 @@
+Latest Todo, after SC feedback (incorporate ALL prior feedback from ALL submissions: SC, IPDPS, Sigmod, Pasc, retreat presentation and poster session)
+------------------
 
+- Related Works section - Comment on NERSC Magellan Report, Sparrow, Sparkler, Kira, Drineas parallel Blendenpik, Network Perf. on EC2 (INFOCOMM2010), Making Sense of Perf. in Data Analytics (NSDI15), MADlib and MAD Skills papers.
+
+- Cite all of the above (however, unsure how parallel Blendenpik fits as we’re not talking about algorithm innovation for Spark).
+
+- Extend Straggler problem subsection as many reviewers had questions and concerns about the plots.
+
+- More on Spark/MPI implementation. Comment on YARN, Mesos, etc.
+
+- Shorten/omit science results section (see review 3).
+
+- Additional plots/alternative plots — Show non-stacked bars for better comparison with MPI v. Spark (especially relevant for NMF data), remove HDF5 times and show scalability of just algorithm, and plot with Spark overheads removed. Some asked about going to larger scale but is that feasible.
+
+- More explanation of the phenomena observed in the plots. E.g., issues that may be due to H5Spark should be addressed (these were asked about at the retreat), as should concerns about why there is still a multiple times gap between Spark and MPI even when overheads are removed (also asked about at the retreat)
+
+- More explanation on Spark setup (see review 4).
+
+- Legibility of figures in print.
+
+- Descriptions for tables and figures.
+
+----
 Paper ToDo
 (aim to get everything in place by 3pm for Prabhat to make complete pass)
 
