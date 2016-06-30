@@ -7,7 +7,15 @@ That is, they aim to find matrices $Y$ and $Z$ such that
  \label{eqn:apprx}
     \underset{m\times n}{A} \approx \underset{m\times k}{Y} \times \underset{k\times n}{Z}. 
 \end{equation*}
-Low-rank matrix factorization methods are important tools in linear algebra and numerical analysis, and they find use in a variety of scientific fields and scientific computing. Throughout, we assume the data matrix $A$ has size $m \times n$ and rank $r$, with $r \ll n \ll m$; this ``tall-skinny'', highly rectangular setting is common in practice. 
+Low-rank matrix factorization methods are important tools in linear algebra and numerical analysis, and they find use in a variety of scientific fields and scientific computing. These methods have the following advantages:
+\begin{itemize}
+  \item They are often useful in data compression, as smaller matrices can be stored more efficiently.
+  \item In some cases, the results of analysis using them are more interpretable. For example, in imaging analysis, the original images can be reconstructed using linear combination of basis images.
+  \item They can be viewed as a basic dimension reduction technique.
+  \item In many modern applications, datasets containing a massive number of rows or columns are becoming more common, which makes it difficult for data visualization or applying classic algorithms, but low-rank approximation methods express every data point in a low-dimensional space defined by only a few features.
+\end{itemize}
+Throughout, we assume the data matrix $A$ has size $m \times n$ and rank $r$, with $r \ll n \ll m$; this ``tall-skinny'', highly rectangular setting is common in practice. 
+
 
 Matrix factorizations are also widely-used in statistical data analysis~\cite{HMH00}.
 Depending on the particular application, various low-rank factorization techniques are of interest. Popular choices include the singular value decomposition~\cite{GVL96}, principal component analysis~\cite{pcaBook}, rank-revealing QR factorization~\cite{GE96}, nonnegative matrix factorization (NMF) ~\cite{NMFalg}, and CX/CUR decompositions~\cite{CUR_PNAS}.
