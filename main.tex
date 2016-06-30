@@ -2,7 +2,8 @@
 %2345678901234567890123456789012345678901234567890123456789012345678901234567890
 %        1         2         3         4         5         6         7         8
 
-\documentclass[letterpaper, 10 pt, conference]{ieeeconf} 
+\documentclass[11pt]{article}
+\usepackage{fullpage}
 \usepackage{color}
 \usepackage{multirow}
 \usepackage{float}
@@ -15,29 +16,13 @@
 \usepackage{algpseudocode}
 \usepackage{algorithm, algorithmicx}
 \usepackage{hyperref}
-% if you need a4paper
-%\documentclass[a4paper, 10pt, conference]{ieeeconf}      % Use this line for a4
-                                                          % paper
-
-\IEEEoverridecommandlockouts                              % This command is only
-                                                          % needed if you want to
-                                                          % use the \thanks command
-\overrideIEEEmargins
-% See the \addtolength command later in the file to balance the column lengths
-% on the last page of the document
 
 
 
-% The following packages can be found on http:\\www.ctan.org
 \usepackage{graphics} % for pdf, bitmapped graphics files
 \usepackage{graphicx}
-%\usepackage{epsfig} % for postscript graphics files
-%\usepackage{mathptmx} % assumes new font selection scheme installed
-%\usepackage{times} % assumes new font selection scheme installed
-%\usepackage{amsmath} % assumes amsmath package installed
-%\usepackage{amssymb}  % assumes amsmath package installed
 
-\title{\LARGE \bf
+\title{
 Matrix factorizations at scale: a comparison of scientific data analytics on Spark and MPI using three case studies 
 }
 
@@ -48,10 +33,10 @@ Matrix factorizations at scale: a comparison of scientific data analytics on Spa
 \thanks{$^{4}$Cray, Inc.}
 }
 
+\date{July 1, 2016}
+
 \begin{document}
 \maketitle
-\thispagestyle{empty}
-\pagestyle{empty}
 
 \input{text/abstract}
 
@@ -92,8 +77,8 @@ Matrix factorizations at scale: a comparison of scientific data analytics on Spa
 \input{text/ack}
 
 \nocite{*}
-\bibliographystyle{plain}
+\bibliographystyle{abbrv}
 \bibliography{refs}
 
-\addtolength{\textheight}{-12cm}   
+%\addtolength{\textheight}{-12cm}   
 \end{document}
