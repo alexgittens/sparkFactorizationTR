@@ -15,7 +15,7 @@ Unfortunately, the performance of such frameworks at scale on conventional HPC h
 For linear algebraic computations more broadly, and matrix factorizations in particular, there is a gap between the performance of  well-established libraries (ScaLAPACK, LAPACK, BLAS, PLASMA, MAGMA, etc.~\cite{lapack99,PlasmaMagma2009}) and toolkits available in Spark. 
 Our work takes on the important task of testing nontrivial linear algebra and matrix factorization computations in Spark for real-world, large-scale scientific data analysis applications. We compare and contrast its performance with C+MPI implementations on HPC hardware. The main contributions of this paper are as follows:
 \begin{itemize}
-\item{We develop parallel versions of three leading matrix factorizations (PCA, NMF, CX) in Spark and C+MPI; and we apply them to several TB-sized scientific datasets.}
+  \item{We develop parallel versions of three leading matrix factorizations (PCA, NMF, CX) in Spark and C+MPI; and we apply them to several TB-sized scientific data sets.}
 \item{We conduct strong scaling tests on a XC40 system, and we test the scaling of Spark on up to 1600 nodes.}
 \item{We characterize the performance gap between Spark and C+MPI for matrix factorizations, and  comment on opportunities for future work in Spark to better address large scale scientific data analytics on HPC platforms.}
 \end{itemize}
