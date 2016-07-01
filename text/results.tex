@@ -1,20 +1,3 @@
-\begin{table}[t]
-\centering
-
-\begin{tabular}{|c|c|c|c|c|c|} \hline
-Algo & Size & \# Nodes & MPI Time (s) & Spark Time (s)\\ \hline
-\multirow{3}{*}{NMF} & \multirow{3}{*}{1.6 TB} & $50$ & $66$ & $278$\\
-{} & {} & $100$  & $45$ & $207$\\
-{} & {} & $300$ & $30$ & $70$\\ \hline
-\multirow{4}{*}{PCA} & \multirow{3}{*}{2.2 TB} & 100 & 94 & 934\\
- {} & {} & 300 & 60 & 827\\
- {} & {} & 500 & 56 & 1160\\ \cline{2-5}
- {} & {16 TB} & {MPI: 1600 Spark: 1522} & 160 & 4175 \\ \hline
-\end{tabular}
-\caption{{Summary of Spark and MPI running times.}}
-\label{tab:matrix}
-\end{table}
-
 \subsection{NMF applied to the Daya Bay matrix}
 The separable NMF algorithm we implemented fits nicely into a data parallel programming model. After the initial parallel TSQR the remainder of the algorithm can be computed sequentially. The Daya Bay dataset is especially amenable to this approach due to the extreme aspect ratio of the dataset and a desired rank of $10$.
 
@@ -35,7 +18,7 @@ Figure \ref{fig:nmfspark} illustrates the running time breakdown for Spark NMF o
 \begin{figure}[h]
 \centering
 \includegraphics[width=\textwidth]{fig/peff.png}
-\caption{Comparison of parallel efficiency for C+MPI and Spark. The x-axis label ``Node Bucket'' refers to the node counts. For NMF these are 50, 100, and 300 nodes (left to right) and 100, 300, and 500 nodes for PCA.}
+\caption{Comparison of parallel efficiency for C+MPI and Spark. The x-axis label ``Node Bucket'' refers to the node counts. For NMF these are 50, 100, and 300 nodes (left to right) and 100, 300, and 500 nodes for PCA. For both algorithms, efficiency is measured relatively to the performance at the smallest node count.}
 \label{fig:peff}
 \end{figure}
 
@@ -69,16 +52,7 @@ Figure \ref{fig:mpipca} shows the running time breakdown results for PCA on 100,
 Figure \ref{fig:sparkpca} shows the scaling and running time breakdown of the Spark PCA implementation for 100, 300, and 500 nodes. The Gram matrix-vector products scale linearly with the number of nodes however this is outweighed by inefficiencies in Spark. At this scale, Spark is entirely bottlenecked by scheduler delays, task overhead and Spark straggler delay times. Task overhead consists of deserializing a task, serializing a result and writing and reading shuffle data. The Spark scheduling delay and task overhead time scales inversely with the number of nodes. This is likely due to the centralized scheduler used in Spark. PCA is a data parallel algorithm, however, its iterative nature stresses the Spark scheduler since many tasks are launched during each iteration. Under this workload we observed a 10.2$\times$, 14.5$\times$, and 22$\times$ performance gap on 100, 300, and 500 nodes, respectively, between Spark and MPI. The running time disparity between $AV$ products and sequential SVD can be attributed to the use of single-threaded BLAS for MPI and multi-threaded BLAS for Spark.
 
 Figure \ref{fig:peff} shows the parallel efficiency of MPI PCA and Spark PCA. In the PCA case we observed that the MPI version hits an I/O bottleneck, a communication bottleneck in the $AV$ product and a sequential bottleneck in SVD($AV$). All of these are limiting factors and introduce inefficiencies to MPI PCA. Spark PCA is less efficient that MPI PCA due to scheduler delays, task overhead and straggler effects. The scheduler delays are more prominent in PCA than in NMF due to the larger number of tasks. NMF makes a single pass over the data whereas PCA makes many passes over the data and launches many tasks per iteration.
-% \begin{figure}[t]
-% \includegraphics[width=.5\textwidth]{fig/spark_pca.png}
-% \end{figure}
 
-
-% \begin{figure}[t]
-% \includegraphics[width=.5\textwidth]{fig/stage_8_hero_run.png}
-% \end{figure}
-
-%\textcolor{blue}{parallel efficiency, stacked bar graph of running time.}
 \paragraph{PCA Hero Run.}
 We used all 1600 Cori nodes to perform PCA on the 16TB CAM5 atmospheric dataset. In order to complete this test in a reasonable amount of time, we fix  the number of iterations for the EVD of $A^TA$ to $70$ iterations. MPI PCA was able to complete this run in $160s$. Unfortunately we were unsuccessful at launch Spark on $1600$ nodes and after many attempts we reduced the number of nodes to $1522$. Once the node count was decreased Spark PCA successfully completed the run in $4175s$. Figure \ref{fig:hero} shows the head-to-head running time comparison of the full-system run. The Gram matrix-vector products are an order of magnitude more costly in Spark. We noticed that the tree-aggregates were very slow at full-system scale and are the likely cause of slow Gram matrix-vector products. The $AV$ and SVD in Spark are much faster than MPI due to use of multiple OpenBLAS threads. Finally, we observed that the Spark overheads were an order of magnitude more than the communication and computation time.
 
@@ -103,7 +77,26 @@ Much like PCA, the CX decomposition requires a parallel Gramian multiply, a dist
  The CX decomposition selected ions in three narrow regions of $m/z$. Among those ions identified as having significant leverage scores are ions at $m/z$ values of 439.0819, 423.0832, and 471.1276, which correspond to neutral losses of $\rm{CH_2}$, $\rm{CH_2O}$, and a neutral ``gain'' of $\rm{H_2O}$ from the 453.0983 ion.  These relationships indicate that this set of ions, all identified as having significant leverage scores, are chemically related.  That fact indicates that these ions may share a common biological origin, despite having distinct spatial distributions in the plant tissue.  
 
 \subsection{Summary of Spark vs. C+MPI performance comparison}
- \begin{table}[t]
+We have demonstrated that matrix factorizations (which have traditionally been implemented using high-performance parallel libraries) can be implemented on Spark, and that Spark can run on large node counts on HPC platforms. By exploring the performance trade-offs of Spark matrix factorizations and comparing to traditional MPI implementations we have gained key insights into Spark's scalability. Table~\ref{tab:matrix} summarize the wall-clock times of the MPI and Spark implementations of the factorization considered, and Table~\ref{tab:perfgaps} summarizes the performance gaps between Spark and MPI. These gaps range betwee $2\times - 25\times$ when I/O time is included in the comparison and $10\times - 40\times$ when I/O is not included. These gaps are large, but our experiments indicated that Spark I/O scaling is comparable to MPI I/O scaling, and that the computational time scales. The performance gaps are due primarily to scheduler delays, straggler effects, and task overhead times. If these bottlenecks can be alleviated, then Spark can close the performance gap and become a competitive, easy-to-use framework for data analytics on high-performance architectures.
+
+\begin{table}[tbh]
+\centering
+
+\begin{tabular}{|c|c|c|c|c|c|} \hline
+Algo & Size & \# Nodes & MPI Time (s) & Spark Time (s)\\ \hline
+\multirow{3}{*}{NMF} & \multirow{3}{*}{1.6 TB} & $50$ & $66$ & $278$\\
+{} & {} & $100$  & $45$ & $207$\\
+{} & {} & $300$ & $30$ & $70$\\ \hline
+\multirow{4}{*}{PCA} & \multirow{3}{*}{2.2 TB} & 100 & 94 & 934\\
+ {} & {} & 300 & 60 & 827\\
+ {} & {} & 500 & 56 & 1160\\ \cline{2-5}
+ {} & {16 TB} & {MPI: 1600 Spark: 1522} & 160 & 4175 \\ \hline
+\end{tabular}
+\caption{{Summary of Spark and MPI running times.}}
+\label{tab:matrix}
+\end{table}
+
+\begin{table}[tbh]
 \begin{center}
 \begin{tabular}{|c|c|c|c|} \hline
 Algo & \# Nodes & Gap with I/O & Gap without I/O\\ \hline
@@ -119,5 +112,4 @@ Algo & \# Nodes & Gap with I/O & Gap without I/O\\ \hline
 \caption{Summary of the performance gap between the MPI and Spark implementations.}
 \label{tab:perfgaps}
 \end{table}
-We have demonstrated that matrix factorizations (which have traditionally been implemented using high-performance parallel libraries) can be implemented on Spark, and that Spark can run on large node counts on HPC platforms. By exploring the performance trade-offs of Spark matrix factorizations and comparing to traditional MPI implementations we have gained key insights into Spark's scalability. Table \ref{tab:perfgaps} summarizes the performance gaps between Spark and MPI which are $2\times - 25\times$ with I/O times and $10\times - 40\times$ without I/O times. Though the gaps may be large, our experiments indicated that Spark I/O scaling is comparable to MPI I/O scaling, that the computation scales well and that the primary bottlnecks are scheduler delays, straggler effects and task overhead times. If these bottlenecks can be alleviated, then Spark can close the performance gap and become a competitive, easy-to-use framework for data analytics on high-performance architectures.   
-        
+
