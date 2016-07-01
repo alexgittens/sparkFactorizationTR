@@ -1,6 +1,4 @@
 
-\subsection{Matrix Factorizations}
-
 Given an $m \times n$ data matrix $A$, low-rank matrix factorization methods aim to find two or more smaller matrices such that their product is a good approximation to $A$.
 That is, they aim to find matrices $Y$ and $Z$ such that
 \begin{equation*}
@@ -23,7 +21,7 @@ Depending on the particular application, various low-rank factorization techniqu
 In this work, we consider the PCA decomposition, due to its ubiquity, as well as the NMF and CX/CUR decompositions, due to their usefulness in scalable and interpretable data analysis. In the remainder of the section, we briefly describe these decompositions and the algorithms we used in our implementations, and we also discuss related implementations. The body of work---theoretical and practical--- surrounding distributed low-rank matrix factorization is large and continuously growing, so for conciseness we restrict our discussion to works that implement PCA, NMF, CX/CUR or similar algorithms in Spark or the related Hadoop/MapReduce platform. We note also that the HPC community has produced many high quality packages specifically for computing partial SVDs of large matrices that could have been used when  developing our C+MPI benchmarks: PROPACK~\cite{larsen1998lanczos}, BLOPEX~\cite{blopex2007}, and \textsc{Anasazi}~\cite{baker2009anasazi}, among others. We refer the interested reader to~\cite{hernandez2009survey} for a well-written survey. Because of the convenience of its Netlib-java binding for Spark development, we chose to use \textsc{ARPACK} for our PCA benchmark.
 % For an arbitrary matrix $A$, denote by $\a_i$ its $i$-th row, $\a^j$ its $j$-th column and $\a_{ij}$ its $(i,j)$-th element. 
 
-\subsubsection{PCA} 
+\paragraph{Principal Components Analysis.} 
 Principal component analysis (PCA) is closely related to the singular value decomposition (SVD).
 In particular, the PCA decomposition of a matrix $A$ is the SVD of the matrix formed by centering each column of $A$ (i.e., removing the mean of each column) and considering $A^TA$ (or $AA^T$).
 The SVD is the most fundamental low-rank matrix factorization because it provides the best low-rank matrix approximation with respect to any unitarily invariant matrix norm.
@@ -73,7 +71,7 @@ Direct algorithms for computing the PCA decomposition scale as $\mathcal{O}(mn^2
 
 \textsc{ML-Lib}, Spark's machine learning library, provides implementations of the SVD and PCA, as well as an alternating least squares algorithm for low-rank factorization~\cite{meng2015mllib} (the PCA algorithm used in ML-Lib is very similar to Algorithm~\ref{alg:pca}, but explicitly computes $A^TA$). Similarly, the Apache Mahout project provides Hadoop and Spark implementations of the PCA, \textsc{RandomizedSVD}, and ALS algorithms. However, to our knowledge, there are no published investigations into the impact Spark or MapReduce's infrastructure has on the performance of these algorithms.
   
-\subsubsection{NMF}
+\paragraph{Nonnegative Matrix Factorization.}
 Although the PCA provides a mathematically optimal low-rank decomposition in the sense of~\eqref{eqn:obj}, in some scientific applications retaining sparseness and interpretability is as important as explaining variability. 
 Various nonnegative matrix factorizations (NMFs) provide interpretable low-rank matrix decompositions when the columns of $A$ are nonnegative and can be viewed as additive superpositions of a small number of positive factors~\cite{gillis2014and}. NMF has found applications, among other places, in medical imaging~\cite{lee2001nmf}, facial recognition~\cite{guillamet2002non}, chemometrics~\cite{Paatero199723}, hyperspectral imaging~\cite{gillis2015hierarchical}, and astronomy~\cite{pauca2006nonnegative}.
 
@@ -97,7 +95,7 @@ where $W \in \mathbb{R}^{m \times k}$ and $H \in \mathbb{R}^{k \times n}$ are en
 
 The \textsc{ML-Lib} and Mahout libraries provide alternating least squares-based NMF implementations in Spark and MapReduce, respectively, and several other NMF implementations are available for the MapReduce framework~\cite{liu2010distributed,Liao201448,benson2014scalable}. We note that~\cite{benson2014scalable} introduced Algorithm~\ref{alg:nmf}. None of these works quantified the performance costs of implementing these algorithms in the Spark or MapReduce frameworks.
 
-\subsubsection{CX/CUR}
+\paragraph{CX/CUR decompositions.}
 CX (and related CUR) decompositions are
 low-rank matrix decompositions that are expressed in terms of a small number of actual columns/rows, i.e, actual data elements, as opposed to eigencolumns/eigenrows.  
 As such, they have been used in scientific applications where coupling analytical techniques with domain knowledge is at a premium, including

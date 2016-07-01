@@ -1,13 +1,10 @@
 
-\subsection{Spark as a Data Analytics Platform} 
-%\textcolor{blue}
-
+\paragraph{Spark as a Data Analytics Platform.} 
 Spark is a parallel computing framework, built on the JVM, that adheres to the data parallelism model. A Spark cluster is composed of a driver process and a set of executor processes. The driver schedules and manages the work, which is carried out by the executors. The basic unit of work in Spark is called a task. A single executor has several slots for running tasks (by default, each core of an executor is mapped to one task) and runs several concurrent tasks in the course of calculations. Spark's primitive datatype is the resilient distributed dataset (RDD), a distributed array that is partitioned across the executors. The user-defined code that is to be run on the Spark cluster is called an application. When an application is submitted to the cluster, the driver analyses its computation graph and breaks it up into jobs.  Each job represents an action on the dataset, such as counting the number of entries, returning dataset entries, or saving a dataset to a file. Jobs are further broken down into stages, which are collections of tasks that execute the same code in parallel on a different subset of data. Each task operates on one partition of the RDD. Communication occurs only between stages, and takes the form of a shuffle, where all nodes communicate with each other, or a collect, where all nodes send data to the driver.
 
 Spark employs a lazy evaluation strategy for efficiency. All Spark operations that have no immediate side-effects other than returning an RDD are deferred if possible. Instead, deferrable operations simply create an entry in the program's computation graph, recording the input dependencies and capturing any closures and values needed. This approach allows Spark to defer computations as much as possible, and when the evaluation is unavoidable the entire Spark job can be examined by Spark's scheduler. This allows the Spark execution engine to batch together related operations, optimize data locality, and perform better scheduling. A major benefit of Spark over MapReduce is the use of in-memory caching and storage so that data structures may be reused rather than being recomputed. Because Spark tracks the computation graph and the dependencies required for the generation of all RDDs, it natively provides fault-tolerance: given the lineage of the RDD, any lost partitions of that RDD can be recomputed as needed.
 
-\subsection{Implementing Matrix Factorizations in Spark}
-
+\paragraph{Implementing Matrix Factorizations in Spark.}
 All three matrix factorizations store the matrices in a row-partitioned format. This enables us to use data parallel algorithms and match Spark's data parallel model.
 
 The \textsc{MultiplyGramian} algorithm is the computational core of the PCA and CX algorithms.
@@ -17,6 +14,6 @@ The NMF algorithm has as its core the tall-skinny QR factorization, which is com
 We used the \textsc{TSQR} implementation available in the \textsc{Ml-Matrix} package. To implement the \textsc{XRay} algorithm, we use the \textsc{ML-Lib} non-negative least squares solver.
 
 
-\subsection{Implementing Matrix Factorizations in C+MPI}
+\paragraph{Implementing Matrix Factorizations in C+MPI.}
 %\textcolor{red}{Is this subsection necessary? All I'm saying is use available optimized BLAS, MPI and Cray Parallel HDF5 libraries. This overlaps with tuning parameters section and is likely not necessary for this community -- AD}
 NMF, PCA and CX require linear algebra kernels that are widely available in libraries such as Intel MKL, Cray LibSci and arpack-ng and we make use of these for each matrix factorization. The data matrices are represented as 1D arrays of double-precision floating point numbers and are partitioned across multiple nodes using a block row partitioned layout. The 1D layout enabled us to use matrix-vector products and TSQR as the main computational kernels. We predominately use MPI collectives for inter-processor communication and perform independent I/O using the Cray HDF5 parallel I/O~library.  
