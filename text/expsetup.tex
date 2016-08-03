@@ -17,3 +17,23 @@ We followed general Spark guidelines for Spark configuration values. The driver 
 
 \paragraph{C+MPI Tuning Parameters.}
 The NMF algorithm uses the Tall-Skinny QR (TSQR) \cite{ballard14,demmel12} factorization implemented as part of the Communication-Avoiding Dense Matrix Computations (CANDMC) library \cite{Solomonik14} which links to Intel MKL for optimized BLAS routines using the Fortran interface and ensured that loops were auto-vectorized when possible. We explored multi-threading options with OpenMP but found that it did not significantly improve performance. Applying TSQR on the Daya Bay data set results in a $192 \times 192$ upper-triangular matrix. Due to the small size we utilized a sequential non-negative least squares solver by Lawson and Hanson \cite{lawson95} in the \textsc{XRay} algorithm. PCA requires EVD, SVD, matrix-vector products, and matrix-matrix products. We use arpack-ng \cite{Lehoucq97} for the SVD and link to single-threaded Cray LibSci for optimized BLAS routines using the C interface. All experiments were conducted using a flat-MPI configuration with one MPI process per physical core and disabled TurboBoost.
+
+\paragraph{Spark Overheads.}
+To report the overheads due to Spark's communication and synchronization costs, we group them into the following bins, illustrated in Figure~\ref{fig:overheads}:
+
+\begin{figure}[thb!]
+\begin{center}
+\includegraphics[width=.5\textwidth]{fig/spark_overheads.png}
+\caption{Per task chronological breakdown of Spark overheads.}
+\label{fig:overheads}
+\end{center}
+\end{figure}
+
+\begin{itemize}[noitemsep,topsep=0mm]
+  \item \emph{Task Start Delay}: the time between the stage start and when the driver sends the task to an executor.
+  \item \emph{Scheduler Delay}: the sum of the time between when the task is sent to the executor and when it starts deserializing on the executor and the time between the completion of the serialization of the result of the task and the driver's reception of the task completion message.
+  \item \emph{Task Overhead Time}: the sum of the fetch wait times, executor deserialize times, result serialization times, and shuffle write times.
+  \item \emph{Time Waiting Until Stage End}: the time spent waiting on the final task in the stage to end.
+\end{itemize}
+
+
